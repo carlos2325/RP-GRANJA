@@ -8,12 +8,19 @@ from flask import Flask, render_template, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import sqlite3
 import os
+import html
 from datetime import datetime
 
 try:
     from config import SECRET_KEY
 except Exception:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', 'cambiar-en-produccion')
+
+try:
+    from config import SENSORES, DISPOSITIVOS
+except Exception:
+    SENSORES = {}
+    DISPOSITIVOS = {}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -90,6 +97,40 @@ def tarea_lectura_sensores():
 def index():
     """Dashboard principal"""
     return render_template('dashboard.html')
+
+@app.route('/hardware')
+def hardware():
+    return render_template('hardware.html', sensores=SENSORES, dispositivos=DISPOSITIVOS)
+
+@app.route('/api')
+def api_page():
+    return render_template('api.html')
+
+@app.route('/docs')
+def docs():
+    items = [
+        {'key': 'README.md', 'label': 'README.md'},
+        {'key': 'INSTRUCCIONES.md', 'label': 'INSTRUCCIONES.md'},
+        {'key': 'DEPLOY.md', 'label': 'DEPLOY.md'},
+        {'key': 'SSH.md', 'label': 'SSH.md'},
+        {'key': 'config.py', 'label': 'config.py'},
+        {'key': 'requirements.txt', 'label': 'requirements.txt'},
+    ]
+    allow = {i['key']: i['label'] for i in items}
+    key = request.args.get('file') or 'README.md'
+    label = allow.get(key)
+    if not label:
+        key = 'README.md'
+        label = allow[key]
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_dir, key)
+    content = ''
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+            content = f.read()
+    except Exception:
+        content = 'No se pudo leer el archivo.'
+    return render_template('docs.html', items=items, current_label=label, content=html.escape(content))
 
 @app.route('/api/sensores')
 def api_sensores():

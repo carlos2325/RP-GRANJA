@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}📚 Docs | Granja IoT{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h2>📄 Archivos</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            {% for item in items %}
+                <a class="btn" href="/docs?file={{ item.key }}" style="background:#111827; color:white;">{{ item.label }}</a>
+            {% endfor %}
+        </div>
+        <div style="margin-top:14px; color: var(--muted); line-height: 1.5;">
+            Mostrando: <span class="mono">{{ current_label }}</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📝 Contenido</h2>
+        <div class="doc mono">{{ content }}</div>
+    </div>
+</div>
+{% endblock %}

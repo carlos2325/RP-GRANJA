@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}🧩 API | Granja IoT{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h2>📍 Páginas</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ruta</th>
+                    <th>Qué muestra</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono"><a href="/">/</a></td><td>Dashboard (HTMX)</td></tr>
+                <tr><td class="mono"><a href="/hardware">/hardware</a></td><td>Pines y mapeo desde config</td></tr>
+                <tr><td class="mono"><a href="/api">/api</a></td><td>Mapa de rutas</td></tr>
+                <tr><td class="mono"><a href="/docs">/docs</a></td><td>Documentación del proyecto</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>⚡ Endpoints (HTMX)</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ruta</th>
+                    <th>Método</th>
+                    <th>Salida</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">/api/sensores/ultima</td><td class="mono">GET</td><td>HTML (sensores)</td></tr>
+                <tr><td class="mono">/api/sensores</td><td class="mono">GET</td><td>HTML (historial)</td></tr>
+                <tr><td class="mono">/api/dispositivos</td><td class="mono">GET</td><td>HTML (controles)</td></tr>
+                <tr><td class="mono">/api/dispositivos/&lt;id&gt;/toggle</td><td class="mono">POST</td><td>HTML (controles)</td></tr>
+                <tr><td class="mono">/salud</td><td class="mono">GET</td><td>HTML (badge)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}🔧 Hardware | Granja IoT{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h2>🧷 Pines (Sensores)</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>GPIO</th>
+                    <th>Tipo</th>
+                    <th>Intervalo</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for name, cfg in sensores.items() %}
+                <tr>
+                    <td><span class="pill">{{ name }}</span></td>
+                    <td class="mono">{{ cfg.get('pin') }}</td>
+                    <td class="mono">{{ cfg.get('tipo') }}</td>
+                    <td class="mono">{{ cfg.get('intervalo') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>🔌 Pines (Actuadores)</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>GPIO</th>
+                    <th>Tipo</th>
+                    <th>Etiqueta</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for name, cfg in dispositivos.items() %}
+                <tr>
+                    <td><span class="pill">{{ name }}</span></td>
+                    <td class="mono">{{ cfg.get('pin') }}</td>
+                    <td class="mono">{{ cfg.get('tipo') }}</td>
+                    <td>{{ cfg.get('nombre') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🧠 Nota</h2>
+    <div style="color: var(--muted); line-height: 1.5;">
+        Esta vista se genera desde <span class="mono">config.py</span>. Si quieres un diagrama visual (silos / circuito),
+        súbelo a <span class="mono">docs/hardware/</span> y lo enlazamos aquí.
+    </div>
+</div>
+{% endblock %}
