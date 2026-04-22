@@ -1,5 +1,7 @@
 Flask==2.3.2
 paho-mqtt==1.6.1
-RPi.GPIO==0.7.0
-Adafruit-DHT==1.2.3
+gpiozero
+lgpio
+adafruit-circuitpython-dht
+adafruit-blinka
 APScheduler==3.10.1

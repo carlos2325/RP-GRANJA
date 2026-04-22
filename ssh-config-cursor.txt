@@ -1,0 +1,25 @@
+# ============================================================
+# Config SSH para Cursor – Conexión sin contraseña a la Raspberry
+# ============================================================
+# Copiar este bloque en:
+#   Linux/Mac: ~/.ssh/config
+#   Windows:   C:\Users\TU_USUARIO\.ssh\config
+#
+# 1) ssh-keygen -t ed25519 -f ~/.ssh/granja_iot -N ""
+# 2) ssh-copy-id -i ~/.ssh/granja_iot.pub pi@192.168.1.135
+# 3) Pegar el bloque:
+#
+# Host granja
+#     HostName 192.168.1.135
+#     User pi
+#     IdentityFile ~/.ssh/granja_iot
+#     IdentitiesOnly yes
+#     AddKeysToAgent yes
+# ============================================================
+
+Host granja
+    HostName 192.168.1.135
+    User pi
+    IdentityFile ~/.ssh/granja_iot
+    IdentitiesOnly yes
+    AddKeysToAgent yes

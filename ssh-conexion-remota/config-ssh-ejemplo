@@ -1,0 +1,7 @@
+# Copiar esto en el otro equipo en:  ~/.ssh/config
+
+Host granja-iot
+    HostName 192.168.1.135
+    User pi
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519_granja

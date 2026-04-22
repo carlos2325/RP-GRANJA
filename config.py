@@ -2,6 +2,19 @@
 Configuración del proyecto Granja IoT
 """
 
+import os
+
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+if os.path.isfile(_env_path):
+    with open(_env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, _, value = line.partition('=')
+                os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', 'cambiar-en-produccion-clave-segura')
+
 # ==================== SENSORES ====================
 SENSORES = {
     'DHT22': {
@@ -16,7 +29,7 @@ SENSORES = {
     },
     'LUZ': {
         'pin': 22,
-        'tipo': luz,
+        'tipo': 'luz',
         'intervalo': 120
     }
 }

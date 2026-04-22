@@ -1,0 +1,11 @@
+# Parámetros para conectar por SSH a este Raspberry Pi
+
+Host / IP:     192.168.1.135
+Hostname:      raspberrypi
+Usuario:       pi
+Puerto:        22
+Proyecto:      /home/pi/granja-iot
+
+Comando rápido:  ssh pi@192.168.1.135
+
+Para Cursor Remote-SSH: usar "pi@192.168.1.135" o configurar en ~/.ssh/config el host "granja-iot" (ver README.md).

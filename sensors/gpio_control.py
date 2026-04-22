@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
 Control GPIO - Relés, LED, Bombas
-Optimizado para Raspberry Pi con 512MB
+Compatible con Python 3.13 + gpiozero
 """
 
-import RPi.GPIO as GPIO
+from gpiozero import OutputDevice
 import time
 from datetime import datetime
-
-# Usar numeración BCM
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
 
 # Configuración de pines
 PINES = {
@@ -25,18 +21,17 @@ class DispositivoGPIO:
         self.nombre = nombre
         self.pin = pin
         self.estado = False
-        GPIO.setup(self.pin, GPIO.OUT)
-        GPIO.output(self.pin, GPIO.LOW)
+        self.device = OutputDevice(pin, initial_value=False)
 
     def activar(self):
         """Encender dispositivo"""
-        GPIO.output(self.pin, GPIO.HIGH)
+        self.device.on()
         self.estado = True
         self._log("ACTIVADO")
 
     def desactivar(self):
         """Apagar dispositivo"""
-        GPIO.output(self.pin, GPIO.LOW)
+        self.device.off()
         self.estado = False
         self._log("DESACTIVADO")
 
@@ -63,26 +58,17 @@ def riego_automatico(zona, duracion=30):
     """
     device = dispositivos.get(f'riego_{zona}')
     if not device:
-        print(f"❌ Zona {zona} no existe")
+        print(f"Zona {zona} no existe")
         return
 
-    print(f"💧 Iniciando riego Zona {zona} ({duracion}s)...")
+    print(f"Iniciando riego Zona {zona} ({duracion}s)...")
     device.activar()
     time.sleep(duracion)
     device.desactivar()
-    print(f"✅ Riego Zona {zona} completado")
-
-def cleanup():
-    """Limpiar GPIO al salir"""
-    print("\n🔴 Limpiando GPIO...")
-    GPIO.cleanup()
+    print(f"Riego Zona {zona} completado")
 
 if __name__ == '__main__':
     try:
-        # Ejemplo: riego zona 1 durante 10 segundos
         riego_automatico(zona=1, duracion=10)
-
     except KeyboardInterrupt:
-        print("\n❌ Interrumpido por usuario")
-    finally:
-        cleanup()
+        print("\nInterrumpido por usuario")

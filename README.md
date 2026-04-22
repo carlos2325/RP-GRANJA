@@ -25,7 +25,7 @@ granja-iot/
 ```
 
 ## Setup
-1. SSH a Raspberry: `ssh pi@192.168.1.135`
+1. **SSH a Raspberry:** `ssh pi@192.168.1.135` — Ver **[SSH.md](SSH.md)** para la guía completa de conexión.
 2. Install Python deps: `pip install -r requirements.txt`
 3. Run: `python app.py`
 4. Access: `http://192.168.1.135:5000`
