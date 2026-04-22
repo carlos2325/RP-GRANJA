@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}🗺️ Vistas | Granja IoT{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h2>🧭 Páginas (UI)</h2>
+        <table class="table" id="ui-table">
+            <thead>
+                <tr>
+                    <th>Ruta</th>
+                    <th>Métodos</th>
+                    <th>Endpoint</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in ui_routes %}
+                <tr>
+                    <td class="mono">
+                        {% if 'GET' in r.methods and '<' not in r.rule %}
+                        <a href="{{ r.rule }}">{{ r.rule }}</a>
+                        {% else %}
+                        {{ r.rule }}
+                        {% endif %}
+                    </td>
+                    <td class="mono">{{ r.methods|join(', ') }}</td>
+                    <td class="mono">{{ r.endpoint }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>⚡ Endpoints (API / HTMX)</h2>
+        <table class="table" id="api-table">
+            <thead>
+                <tr>
+                    <th>Ruta</th>
+                    <th>Métodos</th>
+                    <th>Endpoint</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in api_routes %}
+                <tr>
+                    <td class="mono">{{ r.rule }}</td>
+                    <td class="mono">{{ r.methods|join(', ') }}</td>
+                    <td class="mono">{{ r.endpoint }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="timestamp">
+            Consejo: los endpoints HTMX devuelven HTML, no JSON.
+        </div>
+    </div>
+</div>
+{% endblock %}
+

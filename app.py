@@ -132,6 +132,32 @@ def docs():
         content = 'No se pudo leer el archivo.'
     return render_template('docs.html', items=items, current_label=label, content=html.escape(content))
 
+@app.route('/pages')
+def pages():
+    rules = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint == 'static':
+            continue
+        methods = sorted((rule.methods or set()) - {'HEAD', 'OPTIONS'})
+        rules.append({
+            'rule': rule.rule,
+            'endpoint': rule.endpoint,
+            'methods': methods,
+        })
+
+    def sort_key(r):
+        return (0 if r['rule'] == '/' else 1, r['rule'])
+
+    ui_routes = sorted(
+        [r for r in rules if not (r['rule'].startswith('/api') or r['rule'] == '/salud')],
+        key=sort_key,
+    )
+    api_routes = sorted(
+        [r for r in rules if (r['rule'].startswith('/api') or r['rule'] == '/salud')],
+        key=lambda r: r['rule'],
+    )
+    return render_template('pages.html', ui_routes=ui_routes, api_routes=api_routes)
+
 @app.route('/api/sensores')
 def api_sensores():
     """API: obtener historial HTML"""
