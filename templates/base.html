@@ -188,6 +188,71 @@
             font-weight: 800;
             font-size: 0.85em;
         }
+
+        .chart-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .spark {
+            width: 100%;
+            height: 72px;
+            margin-top: 12px;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .pinout {
+            display: grid;
+            gap: 8px;
+        }
+
+        .pinout-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .pin {
+            border: 1px solid #f1f5f9;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #ffffff;
+            display: grid;
+            grid-template-columns: 52px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .pin-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 32px;
+            border-radius: 999px;
+            background: #fafafa;
+            font-weight: 900;
+        }
+
+        .pin-meta { min-width: 0; }
+        .pin-meta .pin-text { font-weight: 800; color: #111827; }
+        .pin-meta .pin-sub { color: var(--muted); font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .pin.role-used { border-color: rgba(233,30,99,0.35); background: #fff0f6; }
+        .pin.role-used .pin-num { background: rgba(233,30,99,0.14); color: #9d174d; }
+
+        .pin.role-gnd { border-color: rgba(17,24,39,0.18); background: #f8fafc; }
+        .pin.role-gnd .pin-num { background: rgba(17,24,39,0.08); color: #111827; }
+
+        .pin.role-pwr { border-color: rgba(16,185,129,0.28); background: #ecfdf5; }
+        .pin.role-pwr .pin-num { background: rgba(16,185,129,0.15); color: #065f46; }
+
+        .pin.role-bus { border-color: rgba(59,130,246,0.28); background: #eff6ff; }
+        .pin.role-bus .pin-num { background: rgba(59,130,246,0.15); color: #1d4ed8; }
     </style>
 </head>
 <body>
@@ -199,6 +264,7 @@
 
         <nav class="nav">
             <a href="/">Dashboard</a>
+            <a href="/monitor">Monitor</a>
             <a href="/hardware">Hardware</a>
             <a href="/api">API</a>
             <a href="/docs">Docs</a>

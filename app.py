@@ -4,7 +4,7 @@
 Optimizado para Raspberry Pi 512MB
 """
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 import sqlite3
 import os
@@ -98,9 +98,75 @@ def index():
     """Dashboard principal"""
     return render_template('dashboard.html')
 
+@app.route('/monitor')
+def monitor():
+    return render_template('monitor.html')
+
 @app.route('/hardware')
 def hardware():
-    return render_template('hardware.html', sensores=SENSORES, dispositivos=DISPOSITIVOS)
+    bcm_to_phys = {
+        2: 3, 3: 5, 4: 7, 17: 11, 27: 13, 22: 15, 10: 19, 9: 21, 11: 23, 0: 27, 5: 29, 6: 31,
+        13: 33, 19: 35, 26: 37, 14: 8, 15: 10, 18: 12, 23: 16, 24: 18, 25: 22, 8: 24, 7: 26,
+        1: 28, 12: 32, 16: 36, 20: 38, 21: 40,
+    }
+
+    used = {}
+    rows_sensores = []
+    for name, cfg in (SENSORES or {}).items():
+        bcm = cfg.get('pin')
+        phys = bcm_to_phys.get(bcm) if isinstance(bcm, int) else None
+        entry = {
+            'name': name,
+            'bcm': bcm,
+            'phys': phys,
+            'tipo': cfg.get('tipo'),
+            'intervalo': cfg.get('intervalo'),
+            'label': f"Sensor: {name}",
+            'group': 'sensor',
+        }
+        rows_sensores.append(entry)
+        if phys:
+            used.setdefault(phys, []).append(entry['label'])
+
+    rows_dispositivos = []
+    for name, cfg in (DISPOSITIVOS or {}).items():
+        bcm = cfg.get('pin')
+        phys = bcm_to_phys.get(bcm) if isinstance(bcm, int) else None
+        entry = {
+            'name': name,
+            'bcm': bcm,
+            'phys': phys,
+            'tipo': cfg.get('tipo'),
+            'nombre': cfg.get('nombre'),
+            'label': f"Actuador: {cfg.get('nombre') or name}",
+            'group': 'actuador',
+        }
+        rows_dispositivos.append(entry)
+        if phys:
+            used.setdefault(phys, []).append(entry['label'])
+
+    pin_layout = {}
+    for p in (1, 17):
+        pin_layout[p] = {'role': 'pwr', 'text': '3.3V'}
+    for p in (2, 4):
+        pin_layout[p] = {'role': 'pwr', 'text': '5V'}
+    for p in (6, 9, 14, 20, 25, 30, 34, 39):
+        pin_layout[p] = {'role': 'gnd', 'text': 'GND'}
+    pin_layout[3] = {'role': 'bus', 'text': 'I2C SDA (GPIO2)'}
+    pin_layout[5] = {'role': 'bus', 'text': 'I2C SCL (GPIO3)'}
+
+    for phys, labels in used.items():
+        pin_layout[phys] = {'role': 'used', 'text': ' · '.join(labels)}
+
+    return render_template(
+        'hardware.html',
+        sensores=SENSORES,
+        dispositivos=DISPOSITIVOS,
+        rows_sensores=sorted(rows_sensores, key=lambda r: (r['phys'] or 999, str(r['name']))),
+        rows_dispositivos=sorted(rows_dispositivos, key=lambda r: (r['phys'] or 999, str(r['name']))),
+        pin_layout=pin_layout,
+        header_rows=list(range(1, 21)),
+    )
 
 @app.route('/api')
 def api_page():
@@ -113,6 +179,8 @@ def docs():
         {'key': 'INSTRUCCIONES.md', 'label': 'INSTRUCCIONES.md'},
         {'key': 'DEPLOY.md', 'label': 'DEPLOY.md'},
         {'key': 'SSH.md', 'label': 'SSH.md'},
+        {'key': 'docs/hardware/wiring.md', 'label': 'Hardware: cableado'},
+        {'key': 'docs/hardware/estructura.md', 'label': 'Hardware: estructura'},
         {'key': 'config.py', 'label': 'config.py'},
         {'key': 'requirements.txt', 'label': 'requirements.txt'},
     ]
@@ -173,6 +241,28 @@ def api_sensores():
             <span class="timestamp" style="font-size:0.8em; float:right">({d['timestamp'][11:16]})</span>
         </div>"""
     return html or "<div style='text-align:center; color:#999'>Sin historial. Esperando lecturas...</div>"
+
+@app.route('/api/sensores/series')
+def api_sensores_series():
+    try:
+        limit = int(request.args.get('limit') or 60)
+    except Exception:
+        limit = 60
+    limit = max(5, min(600, limit))
+
+    conn = get_db()
+    c = conn.cursor()
+    tipos = [r[0] for r in c.execute('SELECT DISTINCT tipo FROM sensores ORDER BY tipo').fetchall()]
+    series = {}
+    for tipo in tipos:
+        c.execute(
+            'SELECT valor, timestamp FROM sensores WHERE tipo = ? ORDER BY timestamp DESC LIMIT ?',
+            (tipo, limit),
+        )
+        rows = c.fetchall()
+        series[tipo] = [{'t': row['timestamp'], 'v': row['valor']} for row in reversed(rows)]
+    conn.close()
+    return jsonify({'limit': limit, 'series': series})
 
 @app.route('/api/sensores/ultima')
 def api_sensores_ultima():

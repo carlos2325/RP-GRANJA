@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}📈 Monitor | Granja IoT{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📈 Monitor</h2>
+    <div style="color: var(--muted); line-height: 1.5;">
+        Gráficas ligeras con lecturas guardadas en SQLite. Se actualiza automáticamente.
+    </div>
+</div>
+
+<div id="monitor-grid" class="grid"></div>
+
+<script>
+    (async function () {
+        const grid = document.getElementById('monitor-grid');
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            }[c]));
+        }
+
+        function compute(points) {
+            let min = Infinity;
+            let max = -Infinity;
+            let last = null;
+            let lastT = '';
+            for (const p of points) {
+                const v = Number(p.v);
+                if (!Number.isFinite(v)) continue;
+                min = Math.min(min, v);
+                max = Math.max(max, v);
+                last = v;
+                lastT = p.t;
+            }
+            if (min === Infinity) return { min: '-', max: '-', last: '-', lastT: '' };
+            return { min, max, last, lastT };
+        }
+
+        function sparkSvg(points) {
+            const w = 560;
+            const h = 72;
+            const pad = 6;
+            const vals = points.map(p => Number(p.v)).filter(v => Number.isFinite(v));
+            if (vals.length < 2) {
+                return `<div style="color: var(--muted); margin-top: 10px;">Sin suficientes puntos para graficar.</div>`;
+            }
+            const vmin = Math.min(...vals);
+            const vmax = Math.max(...vals);
+            const xs = vals.map((_, i) => pad + (i * (w - 2 * pad) / (vals.length - 1)));
+            const ys = vals.map(v => {
+                const t = (vmax === vmin) ? 0.5 : (v - vmin) / (vmax - vmin);
+                return pad + (1 - t) * (h - 2 * pad);
+            });
+            const pts = xs.map((x, i) => `${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+            return `
+                <svg viewBox="0 0 ${w} ${h}" class="spark" aria-label="Serie temporal">
+                    <polyline fill="none" stroke="rgba(233,30,99,0.18)" stroke-width="10" points="${pts}" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                    <polyline fill="none" stroke="rgba(233,30,99,0.95)" stroke-width="3" points="${pts}" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                </svg>
+            `;
+        }
+
+        function render(series) {
+            grid.innerHTML = '';
+            const keys = Object.keys(series || {}).sort();
+            if (!keys.length) {
+                const c = document.createElement('div');
+                c.className = 'card';
+                c.innerHTML = `<h2>Sin datos</h2><div style="color: var(--muted); line-height: 1.5;">Aún no hay lecturas en la base de datos.</div>`;
+                grid.appendChild(c);
+                return;
+            }
+
+            for (const key of keys) {
+                const points = series[key] || [];
+                const stats = compute(points);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h2>${escapeHtml(key)}</h2>
+                    <div class="chart-meta">
+                        <span class="pill">Último: ${escapeHtml(stats.last)}</span>
+                        <span class="pill">Min: ${escapeHtml(stats.min)}</span>
+                        <span class="pill">Max: ${escapeHtml(stats.max)}</span>
+                    </div>
+                    ${sparkSvg(points)}
+                    <div class="timestamp">${stats.lastT ? `Última muestra: ${escapeHtml(stats.lastT)}` : ''}</div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        async function load() {
+            const res = await fetch('/api/sensores/series?limit=60', { cache: 'no-store' });
+            const data = await res.json();
+            render((data && data.series) || {});
+        }
+
+        await load();
+        setInterval(load, 15000);
+    })();
+</script>
+{% endblock %}
+

@@ -3,6 +3,56 @@
 {% block title %}🔧 Hardware | Granja IoT{% endblock %}
 
 {% block content %}
+<div class="card">
+    <h2>🗺️ Pinout Raspberry Pi (40 pines)</h2>
+    <div class="pinout">
+        {% for r in header_rows %}
+            {% set lp = (r * 2) - 1 %}
+            {% set rp = (r * 2) %}
+            {% set l = pin_layout.get(lp, {}) %}
+            {% set rr = pin_layout.get(rp, {}) %}
+            <div class="pinout-row">
+                <div class="pin{% if l.get('role') %} role-{{ l.get('role') }}{% endif %}">
+                    <div class="pin-num mono">{{ lp }}</div>
+                    <div class="pin-meta">
+                        <div class="pin-text">{{ l.get('text') or 'Libre' }}</div>
+                        <div class="pin-sub mono">
+                            {% if l.get('role') == 'used' %}
+                                EN USO
+                            {% elif l.get('role') %}
+                                {{ l.get('role')|upper }}
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="pin{% if rr.get('role') %} role-{{ rr.get('role') }}{% endif %}">
+                    <div class="pin-num mono">{{ rp }}</div>
+                    <div class="pin-meta">
+                        <div class="pin-text">{{ rr.get('text') or 'Libre' }}</div>
+                        <div class="pin-sub mono">
+                            {% if rr.get('role') == 'used' %}
+                                EN USO
+                            {% elif rr.get('role') %}
+                                {{ rr.get('role')|upper }}
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div style="color: var(--muted); margin-top: 12px; line-height: 1.5;">
+        Leyenda: <span class="pill">EN USO</span> pines ocupados por <span class="mono">config.py</span>,
+        <span class="pill" style="background:#ecfdf5; color:#065f46;">PWR</span> alimentación,
+        <span class="pill" style="background:#f8fafc; color:#111827;">GND</span> tierra,
+        <span class="pill" style="background:#eff6ff; color:#1d4ed8;">BUS</span> buses (I2C, etc.).
+    </div>
+</div>
+
 <div class="grid">
     <div class="card">
         <h2>🧷 Pines (Sensores)</h2>
@@ -11,17 +61,23 @@
                 <tr>
                     <th>Nombre</th>
                     <th>GPIO</th>
+                    <th>Pin físico</th>
                     <th>Tipo</th>
                     <th>Intervalo</th>
                 </tr>
             </thead>
             <tbody>
-            {% for name, cfg in sensores.items() %}
+            {% for row in rows_sensores %}
                 <tr>
-                    <td><span class="pill">{{ name }}</span></td>
-                    <td class="mono">{{ cfg.get('pin') }}</td>
-                    <td class="mono">{{ cfg.get('tipo') }}</td>
-                    <td class="mono">{{ cfg.get('intervalo') }}</td>
+                    <td><span class="pill">{{ row.name }}</span></td>
+                    <td class="mono">{{ row.bcm }}</td>
+                    <td class="mono">{% if row.phys %}{{ row.phys }}{% else %}-{% endif %}</td>
+                    <td class="mono">{{ row.tipo }}</td>
+                    <td class="mono">{{ row.intervalo }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="color: var(--muted); text-align: center;">Sin sensores configurados</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -35,17 +91,23 @@
                 <tr>
                     <th>Nombre</th>
                     <th>GPIO</th>
+                    <th>Pin físico</th>
                     <th>Tipo</th>
                     <th>Etiqueta</th>
                 </tr>
             </thead>
             <tbody>
-            {% for name, cfg in dispositivos.items() %}
+            {% for row in rows_dispositivos %}
                 <tr>
-                    <td><span class="pill">{{ name }}</span></td>
-                    <td class="mono">{{ cfg.get('pin') }}</td>
-                    <td class="mono">{{ cfg.get('tipo') }}</td>
-                    <td>{{ cfg.get('nombre') }}</td>
+                    <td><span class="pill">{{ row.name }}</span></td>
+                    <td class="mono">{{ row.bcm }}</td>
+                    <td class="mono">{% if row.phys %}{{ row.phys }}{% else %}-{% endif %}</td>
+                    <td class="mono">{{ row.tipo }}</td>
+                    <td>{{ row.nombre }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="color: var(--muted); text-align: center;">Sin actuadores configurados</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -56,8 +118,9 @@
 <div class="card">
     <h2>🧠 Nota</h2>
     <div style="color: var(--muted); line-height: 1.5;">
-        Esta vista se genera desde <span class="mono">config.py</span>. Si quieres un diagrama visual (silos / circuito),
-        súbelo a <span class="mono">docs/hardware/</span> y lo enlazamos aquí.
+        Esta vista se genera desde <span class="mono">config.py</span>.
+        Documentación: <a href="/docs?file=docs/hardware/wiring.md">Hardware: cableado</a> ·
+        <a href="/docs?file=docs/hardware/estructura.md">Hardware: estructura</a>
     </div>
 </div>
 {% endblock %}
